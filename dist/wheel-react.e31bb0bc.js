@@ -141,10 +141,14 @@ var Jreact = {
   createElement: createElement
 };
 var JreactDom = {
-  render: render
+  render: function render(vnode, container) {
+    container.innerHTML = '';
+
+    _render(vnode, container);
+  }
 };
 
-function render(vnode, container) {
+function _render(vnode, container) {
   // render的主要功能就是把虚拟dom转换为真实dom
   // html的关键，无非就是，tag,子元素和tag里的内容
   // 这里创建tag里的内容
@@ -160,7 +164,7 @@ function render(vnode, container) {
 
     if (vnode.children && Array.isArray(vnode.children)) {
       vnode.children.forEach(function (vnodeChild) {
-        render(vnodeChild, dom);
+        _render(vnodeChild, dom);
       });
     }
 
@@ -222,7 +226,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "61592" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "54063" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
