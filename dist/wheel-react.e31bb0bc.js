@@ -117,49 +117,86 @@ parcelRequire = (function (modules, cache, entry, globalName) {
   }
 
   return newRequire;
-})({"index.js":[function(require,module,exports) {
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+})({"lib/jreact.js":[function(require,module,exports) {
+"use strict";
 
-// 是因为Babel会转换jsx为 Jreact.createElement(tags, attrs, ...children)
-// npx parcel index.html
-createElement = function createElement(tag, attrs) {
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function createElement(tag, attrs) {
+  console.log("TCL: createElement -> tag", tag);
+  console.log("TCL: createElement -> attrs", attrs);
+
   for (var _len = arguments.length, children = new Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
     children[_key - 2] = arguments[_key];
   }
 
-  // createElement的主要功能，就是在babel把jsx转换以后，再把转换后的结果返回为一个object
+  console.log("TCL: createElement -> children", children); // createElement的主要功能，就是在babel把jsx转换以后，再把转换后的结果返回为一个object
   // 以便之后操作这个object
   // 例如这里的render函数里的第一个入参jsx(vnode)就从jsx转为object了
+
   return {
     tag: tag,
     attrs: attrs,
     children: children
   };
+}
+
+var Component = function Component(props) {
+  _classCallCheck(this, Component);
+
+  this.props = props;
+  this.state = {};
+  renderComponent();
 };
 
-var Jreact = {
-  createElement: createElement
-};
-var JreactDom = {
-  render: function render(vnode, container) {
-    container.innerHTML = '';
+function renderComponent() {
+  console.log('rendercomponent');
+}
 
-    _render(vnode, container);
-  }
+var _default = {
+  createElement: createElement,
+  Component: Component
 };
+exports.default = _default;
+},{}],"lib/jreact-dom.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 function _render(vnode, container) {
+  console.log("TCL: function_render -> vnode", vnode);
+  var dom = createDomfromVnode(vnode);
+  container.appendChild(dom);
+}
+
+function createDomfromVnode(vnode) {
   // render的主要功能就是把虚拟dom转换为真实dom
   // html的关键，无非就是，tag,子元素和tag里的内容
-  // 这里创建tag里的内容
+  console.log("TCL: createDomfromVnode -> vnode", vnode); // 这里创建tag里的内容
+
   if (typeof vnode === 'string' || typeof vnode === 'number') {
-    return container.appendChild(document.createTextNode(vnode));
-  } // 这里递归创建tag和
+    return document.createTextNode(vnode);
+  } // 这里递归创建tag
 
 
   if (_typeof(vnode) === 'object') {
+    if (typeof vnode.tag === 'function') {
+      var _dom = createComponent(vnode.tag, vnode.attrs);
+
+      return _dom;
+    }
+
     var dom = document.createElement(vnode.tag);
-    console.log('dom----->', dom);
     setAttribute(dom, vnode.attrs);
 
     if (vnode.children && Array.isArray(vnode.children)) {
@@ -168,37 +205,95 @@ function _render(vnode, container) {
       });
     }
 
-    container.appendChild(dom);
+    return dom;
   }
-}
+} // 主要就是拷贝属性
+
 
 function setAttribute(node, attrs) {
   if (!attrs) return;
 
   for (var key in attrs) {
+    // 如果开头有on,转换为小写
     if (key.startsWith('on')) {
-      node[key.toLocaleLowerCase()] = attrs[key];
+      node[key.toLocaleLowerCase()] = attrs[key]; // style，要浅拷贝
     } else if (key === 'style') {
-      Object.assign(node.style, attrs[key]);
+      Object.assign(node.style, attrs[key]); // 剩下的属性直接复制
     } else {
       node[key] = attrs[key];
     }
   }
+} // class组件的调用
+
+
+function createComponent(constructor, attrs) {
+  var component = new constructor(attrs);
+  var vnode = component.render;
+  var dom = createDomfromVnode(vnode);
+  component.$root = dom;
+  return dom;
 }
 
-var name = "jirengu";
+var _default = {
+  render: function render(vnode, container) {
+    container.innerHTML = '';
 
-function clickBtn() {
-  console.log('click me');
-} // console.log(vnode)
+    _render(vnode, container);
+  }
+};
+exports.default = _default;
+},{}],"index.js":[function(require,module,exports) {
+"use strict";
 
+var _jreact = _interopRequireDefault(require("./lib/jreact"));
 
-JreactDom.render(Jreact.createElement("div", {
-  className: "wrapper"
-}, Jreact.createElement("h1", null, "hello ", name), Jreact.createElement("button", {
-  onClick: clickBtn
-}, "click me")), document.querySelector('#app'));
-},{}],"node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+var _jreactDom = _interopRequireDefault(require("./lib/jreact-dom"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
+
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
+
+var App =
+/*#__PURE__*/
+function (_Jreact$Component) {
+  _inherits(App, _Jreact$Component);
+
+  function App(props) {
+    _classCallCheck(this, App);
+
+    return _possibleConstructorReturn(this, _getPrototypeOf(App).call(this, props));
+  }
+
+  _createClass(App, [{
+    key: "render",
+    value: function render() {
+      return _jreact.default.createElement("div", null, "1111");
+    }
+  }]);
+
+  return App;
+}(_jreact.default.Component);
+
+_jreactDom.default.render(_jreact.default.createElement(App, null), document.querySelector('#app')); // JreactDom.render((
+//     <h1>hello jirengu</h1>
+//   ),document.querySelector('#app'))
+},{"./lib/jreact":"lib/jreact.js","./lib/jreact-dom":"lib/jreact-dom.js"}],"node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;
@@ -226,7 +321,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "54063" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "59297" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
